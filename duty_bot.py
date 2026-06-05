@@ -2,11 +2,21 @@ import os
 from datetime import datetime, timedelta
 from openpyxl import load_workbook
 
-from telegram import Update
+from telegram import Update, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-TOKEN = "8711787715:AAFEQ1GnFsR2aqRGZXRDQyibG2LTh-3iQmM"
+TOKEN = os.getenv("8711787715:AAFEQ1GnFsR2aqRGZXRDQyibG2LTh-3iQmM")
 EXCEL_FILE = "grafik.xlsx"
+
+
+async def post_init(app):
+    await app.bot.set_my_commands([
+        BotCommand("start", "Запуск бота"),
+        BotCommand("today", "Дежурный сегодня"),
+        BotCommand("tomorrow", "Дежурный завтра"),
+        BotCommand("week", "График на неделю"),
+        BotCommand("month", "График на месяц"),
+    ])
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -16,7 +26,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Команды:\n"
         "/today - дежурный сегодня\n"
         "/tomorrow - дежурный завтра\n"
-        "/week - график на неделю"
+        "/week - график на неделю\n"
+        "/month - график на месяц"
     )
 
 
@@ -48,7 +59,7 @@ def find_duty(target_date):
         if not name:
             continue
 
-        for cell in row[1:8]:  # B-H, понедельник-воскресенье
+        for cell in row[1:8]:
             value = cell.value
 
             if isinstance(value, datetime):
@@ -92,12 +103,26 @@ async def week(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
 
 
-app = ApplicationBuilder().token(TOKEN).build()
+async def month(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = "📅 График на 30 дней:\n\n"
+
+    for i in range(30):
+        day = datetime.now().date() + timedelta(days=i)
+        text += find_duty(day) + "\n"
+
+    await update.message.reply_text(text)
+
+
+if not TOKEN:
+    raise ValueError("BOT_TOKEN не найден. Добавьте BOT_TOKEN в Environment Variables на Render.")
+
+app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("today", today))
 app.add_handler(CommandHandler("tomorrow", tomorrow))
 app.add_handler(CommandHandler("week", week))
+app.add_handler(CommandHandler("month", month))
 app.add_handler(MessageHandler(filters.Document.FileExtension("xlsx"), upload_excel))
 
 app.run_polling()
