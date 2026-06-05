@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 from telegram import Update, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-TOKEN = os.getenv("8711787715:AAFEQ1GnFsR2aqRGZXRDQyibG2LTh-3iQmM")
+TOKEN = "8711787715:AAFEQ1GnFsR2aqRGZXRDQyibG2LTh-3iQmM"
 EXCEL_FILE = "grafik.xlsx"
 
 
