@@ -11,23 +11,23 @@ EXCEL_FILE = "grafik.xlsx"
 
 async def post_init(app):
     await app.bot.set_my_commands([
-        BotCommand("start", "Запуск бота"),
-        BotCommand("today", "Дежурный сегодня"),
-        BotCommand("tomorrow", "Дежурный завтра"),
-        BotCommand("week", "График на неделю"),
-        BotCommand("month", "График на месяц"),
+        BotCommand("start", "🚀 Запуск бота"),
+        BotCommand("today", "📅 Дежурный сегодня"),
+        BotCommand("tomorrow", "📆 Дежурный завтра"),
+        BotCommand("week", "🗓 График на неделю"),
+        BotCommand("month", "📋 График на месяц"),
     ])
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Бот дежурств готов.\n\n"
-        "Отправьте Excel-файл с графиком.\n\n"
-        "Команды:\n"
-        "/today - дежурный сегодня\n"
-        "/tomorrow - дежурный завтра\n"
-        "/week - график на неделю\n"
-        "/month - график на месяц"
+        "👋 Добро пожаловать в бот дежурств!\n\n"
+        "📎 Отправьте Excel-файл с графиком в формате .xlsx\n\n"
+        "📌 Доступные команды:\n"
+        "📅 /today — дежурный сегодня\n"
+        "📆 /tomorrow — дежурный завтра\n"
+        "🗓 /week — график на неделю\n"
+        "📋 /month — график на месяц"
     )
 
 
@@ -35,18 +35,25 @@ async def upload_excel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     document = update.message.document
 
     if not document.file_name.endswith(".xlsx"):
-        await update.message.reply_text("Отправьте Excel файл в формате .xlsx")
+        await update.message.reply_text("❌ Отправьте Excel-файл в формате .xlsx")
         return
 
     file = await document.get_file()
     await file.download_to_drive(EXCEL_FILE)
 
-    await update.message.reply_text("✅ График загружен. Теперь напишите /today")
+    await update.message.reply_text(
+        "✅ График успешно загружен!\n\n"
+        "Теперь можете использовать команды:\n"
+        "📅 /today\n"
+        "📆 /tomorrow\n"
+        "🗓 /week\n"
+        "📋 /month"
+    )
 
 
 def find_duty(target_date):
     if not os.path.exists(EXCEL_FILE):
-        return "Сначала загрузите Excel-файл."
+        return "⚠️ Сначала загрузите Excel-файл с графиком."
 
     wb = load_workbook(EXCEL_FILE, data_only=True)
     ws = wb.active
@@ -74,10 +81,10 @@ def find_duty(target_date):
                 result.append(str(name))
 
     if not result:
-        return f"На {target_date.strftime('%d.%m.%Y')} дежурный не найден."
+        return f"❌ На {target_date.strftime('%d.%m.%Y')} дежурный не найден."
 
-    text = f"📅 {target_date.strftime('%d.%m.%Y')}\n"
-    text += "👤 Дежурный:\n"
+    text = f"📅 Дата: {target_date.strftime('%d.%m.%Y')}\n\n"
+    text += "👨‍💻 Дежурный:\n"
 
     for name in result:
         text += f"• {name}\n"
@@ -94,7 +101,7 @@ async def tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def week(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = "📅 График на 7 дней:\n\n"
+    text = "🗓 График дежурств на 7 дней:\n\n"
 
     for i in range(7):
         day = datetime.now().date() + timedelta(days=i)
@@ -104,7 +111,7 @@ async def week(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def month(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = "📅 График на 30 дней:\n\n"
+    text = "📋 График дежурств на 30 дней:\n\n"
 
     for i in range(30):
         day = datetime.now().date() + timedelta(days=i)
